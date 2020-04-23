@@ -4,7 +4,9 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
+import android.view.accessibility.AccessibilityManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -47,7 +49,23 @@ public class RegisterActivity extends AppCompatActivity {
                     return;
                 }
                 // todo 做网络请求
+                apiService.register(name,password,repassword).enqueue(new Callback<UserResponse>() {
+                    @Override
+                    public void onResponse(Call<UserResponse> call, Response<UserResponse> response) {
+                        if(response.body()!=null&&response.body().user!=null) {
+                            Log.d("Register","uName="+response.body().user.nickname);
+                            Toast.makeText(RegisterActivity.this, "成功注册昵称"+response.body().user.nickname, Toast.LENGTH_SHORT).show();
+                        } else if(response.body()!=null){
+                            Log.d("Register","errorMsg="+response.body().errorMsg+",errorCode="+response.body().errorCode);
+                            Toast.makeText(RegisterActivity.this,"注册失败，"+response.body().errorMsg+ "(Code: "+response.body().errorCode+")",Toast.LENGTH_LONG).show();
+                        }
+                    }
 
+                    @Override
+                    public void onFailure(Call<UserResponse> call, Throwable t) {
+                        Toast.makeText(RegisterActivity.this,"网络错误，"+t.getMessage(),Toast.LENGTH_SHORT).show();
+                    }
+                });
 
             }
         });
